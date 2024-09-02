@@ -1,0 +1,318 @@
+openapi: 3.0.1
+info:
+  title: Du Map
+  version: 0.0.10
+servers:
+- url: https://api.dumap.de/
+tags:
+- name: map
+- name: share
+paths:
+  /face/{planet}/{tileId}:
+    put:
+      operationId: updateTile
+      parameters:
+      - in: path
+        name: planet
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: tileId
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Face'
+          description: OK
+        "401":
+          content: {}
+          description: Access token is missing or invalid
+        "404":
+          content: {}
+          description: Tile does not exist on planet
+      security:
+      - bearerAuth: []
+      tags:
+      - map
+  /faces:
+    get:
+      operationId: getFaces
+      parameters:
+      - in: query
+        name: tileId
+        schema:
+          format: int64
+          type: integer
+      - in: query
+        name: celestialId
+        schema:
+          format: int64
+          type: integer
+      - in: query
+        name: scale
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Face'
+                type: array
+          description: OK
+        "401":
+          content: {}
+          description: Access token is missing or invalid
+        "404":
+          content: {}
+          description: Tile does not exist on planet
+      security:
+      - bearerAuth: []
+      tags:
+      - map
+  /scan:
+    post:
+      operationId: saveScan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Scan'
+        required: false
+      responses:
+        "200":
+          content: {}
+          description: OK
+        "401":
+          content: {}
+          description: Access token is missing or invalid
+      security:
+      - bearerAuth: []
+      tags:
+      - scan
+      x-codegen-request-body-name: body
+  /shares:
+    get:
+      operationId: getShares
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Share'
+                type: array
+          description: OK
+        "401":
+          content: {}
+          description: Access token is missing or invalid
+      security:
+      - bearerAuth: []
+      tags:
+      - shares
+  /shares/{category}/{shareId}:
+    put:
+      operationId: changeShare
+      parameters:
+      - in: path
+        name: category
+        required: true
+        schema:
+          enum:
+          - pending
+          - active
+          type: string
+      - in: path
+        name: shareId
+        required: true
+        schema:
+          format: int64
+          type: number
+      - in: query
+        name: action
+        schema:
+          enum:
+          - cancel
+          - accept
+          type: string
+      responses:
+        "200":
+          content: {}
+          description: OK
+        "401":
+          content: {}
+          description: Access token is missing or invalid
+      security:
+      - bearerAuth: []
+      tags:
+      - shares
+components:
+  schemas:
+    Face:
+      example:
+        owner: owner
+        color:
+          r: 9.301444243932576
+          b: 2.027123023002322
+          g: 3.616076749251911
+        tileId: 0.8008281904610115
+        vertices:
+        - - 1.4658129805029452
+          - 1.4658129805029452
+        - - 1.4658129805029452
+          - 1.4658129805029452
+        own: true
+        center:
+        - 6.027456183070403
+        - 6.027456183070403
+        latitude: 5.637376656633329
+        scan:
+          owner: owner
+          ores: "{}"
+          tileId: 7.061401241503109
+          planet: planet
+          time: 2000-01-23T04:56:07.000+00:00
+        duEntityId: 5.962133916683182
+        longitude: 2.3021358869347655
+      properties:
+        tileId:
+          format: int64
+          type: number
+        owner:
+          type: string
+        own:
+          type: boolean
+        center:
+          items:
+            format: double
+            type: number
+          type: array
+        vertices:
+          items:
+            items:
+              format: double
+              type: number
+            type: array
+          type: array
+        duEntityId:
+          format: int64
+          type: number
+        latitude:
+          format: double
+          type: number
+        longitude:
+          format: double
+          type: number
+        scan:
+          $ref: '#/components/schemas/Scan'
+        color:
+          $ref: '#/components/schemas/RGBColor'
+      required:
+      - own
+      - tileId
+      type: object
+    Scan:
+      example:
+        owner: owner
+        ores: "{}"
+        tileId: 7.061401241503109
+        planet: planet
+        time: 2000-01-23T04:56:07.000+00:00
+      properties:
+        time:
+          format: date-time
+          type: string
+        ores:
+          properties: {}
+          type: object
+        tileId:
+          format: int64
+          type: number
+        planet:
+          type: string
+        owner:
+          type: string
+      required:
+      - ores
+      - owner
+      - planet
+      - tileId
+      - time
+      type: object
+    RGBColor:
+      example:
+        r: 9.301444243932576
+        b: 2.027123023002322
+        g: 3.616076749251911
+      properties:
+        r:
+          format: int64
+          type: number
+        g:
+          format: int64
+          type: number
+        b:
+          format: int64
+          type: number
+      required:
+      - b
+      - g
+      - r
+      type: object
+    Share:
+      example:
+        targetGroup: targetGroup
+        tileId: 6.027456183070403
+        ownShare: true
+        pending: true
+        withContent: true
+        celestial: celestial
+        id: 0.8008281904610115
+        user: user
+        targetUser: targetUser
+      properties:
+        id:
+          format: int64
+          type: number
+        celestial:
+          type: string
+        tileId:
+          format: int64
+          type: number
+        user:
+          type: string
+        targetUser:
+          type: string
+        targetGroup:
+          type: string
+        withContent:
+          type: boolean
+        ownShare:
+          type: boolean
+        pending:
+          type: boolean
+      required:
+      - id
+      - ownShare
+      - pending
+      - user
+      - withContent
+      type: object
+  securitySchemes:
+    bearerAuth:
+      in: header
+      name: Authorization
+      type: apiKey
+x-components:
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+x-original-swagger-version: "2.0"
